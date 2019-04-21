@@ -3,7 +3,7 @@ Streams that split chunks randomly and then randomly join them. Uselful to test 
 
 # Example 1 (using msgpack5)
 
-```
+```ts
 import Duplexify from 'duplexify';
 import Msgpack from "msgpack5"
 import { Duplex, Transform } from 'stream';
