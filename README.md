@@ -1,8 +1,50 @@
 # test-stream-chunkers
 Streams that split chunks randomly and then randomly join them. Uselful to test binary streams on whether they tolerate raw streams.
 
+# Example 1 (using msgpack5)
 
-# Example
+```
+import Duplexify from 'duplexify';
+import Msgpack from "msgpack5"
+import { Duplex, Transform } from 'stream';
+import DuplexPair from 'native-duplexpair';
+import { RandomJoiner } from '../test-stream-chunkers/src';
+
+const pack = Msgpack()
+
+export function upgrade(connection: Duplex) {
+    var encoder = pack.encoder()
+    var decoder = pack.decoder()
+
+    const r1 = new RandomJoiner()
+    const r2 = new RandomJoiner()
+
+    encoder.pipe(r1).pipe(connection).pipe(r2).pipe(decoder)
+
+    return Duplexify.obj(encoder, decoder)
+}
+
+const pair = new DuplexPair()
+
+console.log(Object.keys(pair))
+
+const s1 = upgrade(pair.socket1)
+const s2 = upgrade(pair.socket2)
+s2.pipe(s2)
+
+var i = 0;
+
+setInterval(() => {
+    console.log(++i)
+    s1.write({ i, hi: "dssadasd", df: [ 1, 4, 5,6, [3333]], data: new Date() })
+}, 1)
+
+pair.socket1.on("data", console.log)
+s1.on("data", console.log)
+```
+
+
+# Example 2 (using msgpack-lite -- faster but has bugs)
 
 ```ts 
 import Duplexify from 'duplexify';
